@@ -19,17 +19,28 @@ namespace Negocio.API.Controllers
 
         }
 
-        [HttpGet("seed")]
-        public async Task<IActionResult> SeedDatabase([FromServices] SeedDb seeder)
-        {
-            await seeder.SeedAsync();
-            return Ok("Database seeded");
-        }
 
         [HttpGet("admins")]
         public async Task<ActionResult<IEnumerable<Admin>>> Get()
         {
             return Ok(await _context.Admins.ToListAsync());
+        }
+
+        [HttpDelete("admins/{id}")]
+        public async Task<ActionResult> Delete(int id)
+        {
+            var FilasAfectadas = await _context.Admins
+                .Where(x => x.Id == id)
+                .ExecuteDeleteAsync();
+
+            if (FilasAfectadas == 0)
+            {
+                return NotFound();
+            }
+            else
+            {
+                return NoContent();
+            }
         }
 
 
@@ -64,6 +75,11 @@ namespace Negocio.API.Controllers
 
             return reservation;
         }
+        [HttpGet("members")]
+        public async Task<ActionResult<IEnumerable<Member>>> GetAllMembers()
+        {
+            return await _context.Members.ToListAsync();
+        }
 
         [HttpPost("members")]
         public async Task<ActionResult<Member>> CreateMember(Member member)
@@ -82,7 +98,7 @@ namespace Negocio.API.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(member).State = EntityState.Modified;
+            _context.Update(member);
             await _context.SaveChangesAsync();
 
             return NoContent();
@@ -104,45 +120,16 @@ namespace Negocio.API.Controllers
             return NoContent();
         }
 
-        [HttpGet("members")]
-        public async Task<ActionResult<IEnumerable<Member>>> GetAllMembers()
-        {
-            return await _context.Members.ToListAsync();
-        }
+
+
+
+
 
         [HttpGet("events")]
         public async Task<ActionResult<IEnumerable<Event>>> GetAllEvents()
         {
             return await _context.Events.Include(e => e.Participants).ToListAsync();
         }
-
-        [HttpPost("assign-resources")]
-        public async Task<IActionResult> AssignResourcesToWorkspace(int workspaceId, List<int> resourceIds)
-        {
-            var workspace = await _context.Workspaces.FindAsync(workspaceId);
-            if (workspace == null)
-            {
-                return NotFound();
-            }
-
-            var resources = await _context.Resources.Where(r => resourceIds.Contains(r.Id)).ToListAsync();
-            workspace.Resources = resources;
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
-        [HttpGet("workspaces/availability")]
-        public async Task<ActionResult<IEnumerable<Workspace>>> GetAvailableWorkspaces(DateTime startDate, DateTime endDate)
-        {
-            var availableWorkspaces = await _context.Workspaces
-                .Where(w => !w.Reservations.Any(r => r.StartDate < endDate && r.EndDate > startDate))
-                .ToListAsync();
-
-            return Ok(availableWorkspaces);
-        }
-
-
 
 
         [HttpPost("events/{id}/reservation")]
@@ -171,5 +158,40 @@ namespace Negocio.API.Controllers
             return NoContent();
 
         }
+
+
+        [HttpPost("assign-resources")]
+        public async Task<IActionResult> AssignResourcesToWorkspace(int workspaceId, List<int> resourceIds)
+        {
+            var workspace = await _context.Workspaces.FindAsync(workspaceId);
+            if (workspace == null)
+            {
+                return NotFound();
+            }
+
+            var resources = await _context.Resources.Where(r => resourceIds.Contains(r.Id)).ToListAsync();
+            workspace.Resources = resources;
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+
+
+
+        [HttpGet("workspaces/availability")]
+        public async Task<ActionResult<IEnumerable<Workspace>>> GetAvailableWorkspaces(DateTime startDate, DateTime endDate)
+        {
+            var availableWorkspaces = await _context.Workspaces
+                .Where(w => !w.Reservations.Any(r => r.StartDate < endDate && r.EndDate > startDate))
+                .ToListAsync();
+
+            return Ok(availableWorkspaces);
+        }
+
+
+
+
+
     }
 }
