@@ -19,6 +19,13 @@ namespace Negocio.API.Controllers
 
         }
 
+        [HttpGet("seed")]
+        public async Task<IActionResult> SeedDatabase([FromServices] SeedDb seeder)
+        {
+            await seeder.SeedAsync();
+            return Ok("Database seeded");
+        }
+
         [HttpGet("admins")]
         public async Task<ActionResult<IEnumerable<Admin>>> Get()
         {

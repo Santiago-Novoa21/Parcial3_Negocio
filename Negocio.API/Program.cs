@@ -15,28 +15,26 @@ builder.Services.AddTransient<SeedDb>();
 var app = builder.Build();
 
 
-SeedData(app);
+await SeedData(app);
 
 
 
-void SeedData(WebApplication app)
-
+async Task SeedData(WebApplication app)
 {
-
-    IServiceScopeFactory? scopedFactory = app.Services.GetService<IServiceScopeFactory>();
-
-
-
-    using (IServiceScope? scope = scopedFactory!.CreateScope())
-
+    using var scope = app.Services.CreateScope();
+    var services = scope.ServiceProvider;
+    try
     {
-
-        SeedDb? service = scope.ServiceProvider.GetService<SeedDb>();
-
-        service!.SeedAsync().Wait();
-
+        var context = services.GetRequiredService<DataContext>();
+        await context.Database.MigrateAsync(); // Aplica las migraciones pendientes
+        var seeder = services.GetRequiredService<SeedDb>();
+        await seeder.SeedAsync();
     }
-
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Ocurrió un error durante la siembra de la base de datos.");
+    }
 }
 
 
@@ -53,5 +51,14 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+app.UseCors(x => x
+
+    .AllowAnyMethod()
+
+    .AllowAnyHeader()
+
+    .SetIsOriginAllowed(origin => true)
+
+    .AllowCredentials());
 
 app.Run();

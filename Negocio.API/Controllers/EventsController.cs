@@ -26,7 +26,7 @@ namespace Negocio.API.Controllers
 
 
         [HttpGet("{id:int}")]
-        public async Task<ActionResult<Reservation>> GetReservation(int id)
+        public async Task<ActionResult<Event>> GetReservation(int id)
         {
             var @event = await _context.Events.FirstOrDefaultAsync(x => x.Id == id);
             if (@event == null)
