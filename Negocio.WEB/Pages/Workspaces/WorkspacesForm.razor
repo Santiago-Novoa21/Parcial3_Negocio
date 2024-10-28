@@ -1,0 +1,45 @@
+﻿<h3>Formulario de Espacio de Trabajo</h3>
+
+<EditForm Model="Workspace" OnSubmit="OnSubmit">
+    <DataAnnotationsValidator />
+
+    <div class="mb-3">
+        <label>Nombre del Espacio de Trabajo:</label>
+        <div>
+            <InputText class="form-control" @bind-Value="Workspace.Name" />
+            <ValidationMessage For="@(() => Workspace.Name)" />
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label>Descripción:</label>
+        <div>
+            <InputText class="form-control" @bind-Value="Workspace.Description" />
+            <ValidationMessage For="@(() => Workspace.Description)" />
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label>Capacidad Máxima:</label>
+        <div>
+            <InputNumber class="form-control" @bind-Value="Workspace.Capacity" />
+            <ValidationMessage For="@(() => Workspace.Capacity)" />
+        </div>
+    </div>
+
+    <button class="btn btn-primary" type="submit">Guardar</button>
+    <button class="btn btn-success" @onclick="ReturnAction">Regresar</button>
+</EditForm>
+@code {
+    [EditorRequired]
+    [Parameter]
+    public Negocio.Shared.Entities.Workspace Workspace { get; set; } = new();
+
+    [EditorRequired]
+    [Parameter]
+    public EventCallback OnSubmit { get; set; }
+
+    [EditorRequired]
+    [Parameter]
+    public EventCallback ReturnAction { get; set; }
+}

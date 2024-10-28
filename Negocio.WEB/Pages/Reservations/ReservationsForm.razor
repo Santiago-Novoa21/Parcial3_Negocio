@@ -1,0 +1,56 @@
+﻿
+<h3>Formulario de Reserva</h3>
+
+<EditForm Model="Reservation" OnSubmit="OnSubmit">
+    <DataAnnotationsValidator />
+
+    <div class="mb-3">
+        <label>Fecha de Inicio:</label>
+        <div>
+            <InputDate class="form-control" @bind-Value="Reservation.StartDate" />
+            <ValidationMessage For="@(() => Reservation.StartDate)" />
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label>Fecha de Fin:</label>
+        <div>
+            <InputDate class="form-control" @bind-Value="Reservation.EndDate" />
+            <ValidationMessage For="@(() => Reservation.EndDate)" />
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label>ID Miembro:</label>
+        <div>
+            <InputNumber class="form-control" @bind-Value="Reservation.MemberId" />
+            <ValidationMessage For="@(() => Reservation.MemberId)" />
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label>ID Espacio de Trabajo:</label>
+        <div>
+            <InputNumber class="form-control" @bind-Value="Reservation.WorkspaceId" />
+            <ValidationMessage For="@(() => Reservation.WorkspaceId)" />
+        </div>
+    </div>
+
+    <button class="btn btn-primary" type="submit">Guardar</button>
+    <button class="btn btn-success" @onclick="ReturnAction">Regresar</button>
+</EditForm>
+
+@code {
+    [EditorRequired]
+    [Parameter]
+    public Negocio.Shared.Entities.Reservation Reservation { get; set; } = new();
+
+    [EditorRequired]
+    [Parameter]
+    public EventCallback OnSubmit { get; set; }
+
+    [EditorRequired]
+    [Parameter]
+    public EventCallback ReturnAction { get; set; }
+}
+

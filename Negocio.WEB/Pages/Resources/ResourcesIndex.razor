@@ -1,145 +1,87 @@
 ﻿@page "/resources"
 
 @using Negocio.Shared.Entities
-
 @using Negocio.WEB.Repositories
-
 @using Negocio.WEB.Shared
 
-
-
-
-
 @inject IRepository repository
+@inject NavigationManager navigationManager
+@inject SweetAlertService sweetAlertService
 
-
-
-<h1>ResourcesIndex</h1>
-
-
+<h1>Recursos</h1>
 
 <div class="mb-3">
-
-
-
-
-
-    <a class="btn btn-primary " href="/members/Create">New Resource</a>
-
-
-
+    <a class="btn btn-primary" href="/resources/create">Nuevo Recurso</a>
 </div>
 
-
-
 <GenericList MyList="Resources">
-
-
-
     <Body>
-
         <table class="table table-striped">
-
             <thead>
-
                 <tr>
-
-                    <th>Resources</th>
-
-
-
-
-
+                    <th>Nombre del Recurso</th>
+                    <th>Descripción</th>
+                    <th>Disponible</th>
+                    <th>Acciones</th>
                 </tr>
-
             </thead>
-
             <tbody>
-
                 @foreach (var resource in Resources!)
-
                 {
-
                     <tr>
-
-
-
+                        <td>@resource.Name</td>
+                        <td>@resource.Description</td>
+                        <td>@(resource.Available ? "Sí" : "No")</td>
                         <td>
-
-                            @resource.Name
-
+                            <a class="btn btn-warning" href="/resources/edit/@resource.Id">Editar</a>
+                            <button class="btn btn-danger" @onclick="@(() => Delete(resource))">Borrar</button>
                         </td>
-
-                        <td>
-
-                            @resource.Description
-                        </td>
-
-
-
-
-
-                        <td>
-
-                            @resource.Available
-                        </td>
-
-
-
-                        <td>
-
-                            <a class="btn btn-warning">Editar</a>
-
-                            <button class="btn btn-danger">Borrar</button>
-
-                        </td>
-
-
-
                     </tr>
-
                 }
-
             </tbody>
-
         </table>
-
-
-
     </Body>
-
-
-
 </GenericList>
 
-
-
 @code {
-
-
-
-
-
-    public List<Resource> Resources { get; set; }
-
-
+    public List<Resource> Resources { get; set; } = new List<Resource>();
 
     protected async override Task OnInitializedAsync()
-
     {
-
-        var responseHttp = await repository.GetAsync<List<Resource>>("/api/resources");
-
-        Resources = responseHttp.Response!;
-
-
-
-
-
-
-
-
-
+        await Load();
     }
 
-} 
+    private async Task Load()
+    {
+        var responseHttp = await repository.GetAsync<List<Resource>>("/api/resources");
+        Resources = responseHttp.Response!;
+    }
+
+    private async Task Delete(Resource resource)
+    {
+        var result = await sweetAlertService.FireAsync(new SweetAlertOptions
+            {
+                Title = "Confirmación",
+                Text = "¿Estás seguro de que quieres borrar el recurso?",
+                Icon = SweetAlertIcon.Question,
+                ShowCancelButton = true
+            });
+
+        if (string.IsNullOrEmpty(result.Value))
+        {
+            return;
+        }
+
+        var responseHttp = await repository.DeleteAsync<Resource>($"api/resources/{resource.Id}");
+
+        if (responseHttp.Error)
+        {
+            var mensajeError = await responseHttp.GetErrorMessage();
+            await sweetAlertService.FireAsync("Error", mensajeError, SweetAlertIcon.Error);
+        }
+        else
+        {
+            await Load();
+        }
+    }
+}

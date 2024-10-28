@@ -1,0 +1,48 @@
+﻿
+
+<h3>Formulario de Recurso</h3>
+
+<EditForm Model="Resource" OnSubmit="OnSubmit">
+    <DataAnnotationsValidator />
+
+    <div class="mb-3">
+        <label>Nombre del Recurso:</label>
+        <div>
+            <InputText class="form-control" @bind-Value="Resource.Name" />
+            <ValidationMessage For="@(() => Resource.Name)" />
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label>Descripción:</label>
+        <div>
+            <InputText class="form-control" @bind-Value="Resource.Description" />
+            <ValidationMessage For="@(() => Resource.Description)" />
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label>Disponible:</label>
+        <div>
+            <InputCheckbox class="form-check-input" @bind-Value="Resource.Available" />
+            <ValidationMessage For="@(() => Resource.Available)" />
+        </div>
+    </div>
+
+    <button class="btn btn-primary" type="submit">Guardar</button>
+    <button class="btn btn-success" @onclick="ReturnAction">Regresar</button>
+</EditForm>
+
+@code {
+    [EditorRequired]
+    [Parameter]
+    public Negocio.Shared.Entities.Resource Resource { get; set; } = new();
+
+    [EditorRequired]
+    [Parameter]
+    public EventCallback OnSubmit { get; set; }
+
+    [EditorRequired]
+    [Parameter]
+    public EventCallback ReturnAction { get; set; }
+}
