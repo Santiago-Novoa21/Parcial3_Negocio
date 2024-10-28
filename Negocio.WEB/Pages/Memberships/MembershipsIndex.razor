@@ -1,0 +1,146 @@
+﻿@page "/memberships"
+
+@using Negocio.Shared.Entities
+
+@using Negocio.WEB.Repositories
+
+@using Negocio.WEB.Shared
+
+
+
+
+
+@inject IRepository repository
+
+
+
+<h1>MembershipsIndex</h1>
+
+
+
+<div class="mb-3">
+
+
+
+
+
+    <a class="btn btn-primary " href="/memberships/Create">New Membership</a>
+
+
+
+</div>
+
+
+
+<GenericList MyList="Memberships">
+
+
+
+    <Body>
+
+        <table class="table table-striped">
+
+            <thead>
+
+                <tr>
+
+                    <th>Memberships</th>
+
+
+
+
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                @foreach (var membership in Memberships!)
+
+                {
+
+                    <tr>
+
+
+
+                        <td>
+
+                            @membership.Id
+
+                        </td>
+
+                        <td>
+
+                            @membership.Level
+                        </td>
+
+
+
+
+
+                        <td>
+
+                            @membership.Privileges
+                        </td>
+
+
+
+
+                        <td>
+
+                            <a class="btn btn-warning">Editar</a>
+
+                            <button class="btn btn-danger">Borrar</button>
+
+                        </td>
+
+
+
+                    </tr>
+
+                }
+
+            </tbody>
+
+        </table>
+
+
+
+    </Body>
+
+
+
+</GenericList>
+
+
+
+@code {
+
+
+
+
+
+    public List<Membership> Memberships { get; set; }
+
+
+
+    protected async override Task OnInitializedAsync()
+
+    {
+
+        var responseHttp = await repository.GetAsync<List<Membership>>("/api/memberships");
+
+        Memberships = responseHttp.Response!;
+
+
+
+
+
+
+
+
+
+    }
+
+} 

@@ -1,0 +1,155 @@
+﻿@page "/reservations"
+
+@using Negocio.Shared.Entities
+
+@using Negocio.WEB.Repositories
+
+@using Negocio.WEB.Shared
+
+
+
+
+
+@inject IRepository repository
+
+
+
+<h1>ReservationsIndex</h1>
+
+
+
+<div class="mb-3">
+
+
+
+
+
+    <a class="btn btn-primary " href="/reservations/Create">New Reservation</a>
+
+
+
+</div>
+
+
+
+<GenericList MyList="Reservations">
+
+
+
+    <Body>
+
+        <table class="table table-striped">
+
+            <thead>
+
+                <tr>
+
+                    <th>Reservations</th>
+
+
+
+
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                @foreach (var reservation in Reservations!)
+
+                {
+
+                    <tr>
+
+
+
+                        <td>
+
+                            @reservation.StartDate
+
+                        </td>
+
+                        <td>
+
+                            @reservation.EndDate
+                        </td>
+
+
+
+
+
+                        <td>
+
+                            @reservation.MemberId
+                        </td>
+
+
+
+
+
+                        <td>
+                            @reservation.WorkspaceId
+
+
+                        </td>
+
+
+
+                        <td>
+
+                            <a class="btn btn-warning">Editar</a>
+
+                            <button class="btn btn-danger">Borrar</button>
+
+                        </td>
+
+
+
+                    </tr>
+
+                }
+
+            </tbody>
+
+        </table>
+
+
+
+    </Body>
+
+
+
+</GenericList>
+
+
+
+@code {
+
+
+
+
+
+    public List<Reservation> Reservations { get; set; }
+
+
+
+    protected async override Task OnInitializedAsync()
+
+    {
+
+        var responseHttp = await repository.GetAsync<List<Reservation>>("/api/reservations");
+
+        Reservations = responseHttp.Response!;
+
+
+
+
+
+
+
+
+
+    }
+
+} 

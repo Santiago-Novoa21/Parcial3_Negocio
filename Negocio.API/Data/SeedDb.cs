@@ -23,35 +23,12 @@ namespace Negocio.API.Data
             await _context.Database.EnsureCreatedAsync();
 
             // Llamar a los métodos para poblar las diferentes tablas
-            await CheckAdminsAsync();
             await CheckMembershipsAsync();
             await CheckMembersAsync();
             await CheckWorkspacesAsync();
             await CheckResourcesAsync();
             await CheckEventsAsync();
             await CheckReservationsAsync();
-        }
-
-        private async Task CheckAdminsAsync()
-        {
-            if (!_context.Admins.Any())
-            {
-                _context.Admins.Add(new Admin
-                {
-                    Name = "Admin Principal",
-                    Email = "admin@coworkspace.com",
-                    Role = "SuperAdmin"
-                });
-
-                _context.Admins.Add(new Admin
-                {
-                    Name = "Admin Secundario",
-                    Email = "admin2@coworkspace.com",
-                    Role = "Admin"
-                });
-
-                await _context.SaveChangesAsync();
-            }
         }
 
         private async Task CheckMembershipsAsync()

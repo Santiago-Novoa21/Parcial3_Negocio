@@ -1,0 +1,138 @@
+﻿@page "/workspaces"
+
+@using Negocio.Shared.Entities
+
+@using Negocio.WEB.Repositories
+
+@using Negocio.WEB.Shared
+
+
+
+
+
+@inject IRepository repository
+
+
+
+<h1>WorkspacesIndex</h1>
+
+
+
+<div class="mb-3">
+
+
+
+
+
+    <a class="btn btn-primary " href="/workspaces/Create">New Workspace</a>
+
+
+
+</div>
+
+
+
+<GenericList MyList="Workspaces">
+
+
+
+    <Body>
+
+        <table class="table table-striped">
+
+            <thead>
+
+                <tr>
+
+                    <th>Workspaces</th>
+
+
+
+
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                @foreach (var workspace in Workspaces!)
+
+                {
+
+                    <tr>
+
+
+
+                        <td>
+
+                            @workspace.Name
+
+                        </td>
+
+                        <td>
+
+                            @workspace.Description
+                        </td>
+
+
+
+
+
+                        <td>
+
+                            @workspace.Capacity
+                        </td>
+
+
+
+
+                        <td>
+
+                            <a class="btn btn-warning">Editar</a>
+
+                            <button class="btn btn-danger">Borrar</button>
+
+                        </td>
+
+
+
+                    </tr>
+
+                }
+
+            </tbody>
+
+        </table>
+
+
+
+    </Body>
+
+
+
+</GenericList>
+
+
+
+@code {
+
+
+
+
+
+    public List<Workspace> Workspaces { get; set; }
+
+
+
+    protected async override Task OnInitializedAsync()
+
+    {
+
+        var responseHttp = await repository.GetAsync<List<Workspace>>("/api/workspaces");
+
+        Workspaces = responseHttp.Response!;
+
+    }
+
+} 

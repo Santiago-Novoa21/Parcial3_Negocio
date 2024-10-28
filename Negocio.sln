@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35303.130
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Negocio.Shared", "Negocio.Shared\Negocio.Shared.csproj", "{76BBCBD8-5BC1-46A5-A653-43BC36C87644}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Negocio.Shared", "Negocio.Shared\Negocio.Shared.csproj", "{76BBCBD8-5BC1-46A5-A653-43BC36C87644}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Negocio.API", "Negocio.API\Negocio.API.csproj", "{257A7738-E843-4E31-B9F0-267F1E28EE92}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Negocio.API", "Negocio.API\Negocio.API.csproj", "{257A7738-E843-4E31-B9F0-267F1E28EE92}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Negocio.WEB", "Negocio.WEB\Negocio.WEB.csproj", "{47FBF4FD-2AE1-429F-87AC-FD62FCCCCE91}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Negocio.WEB", "Negocio.WEB\Negocio.WEB.csproj", "{47FBF4FD-2AE1-429F-87AC-FD62FCCCCE91}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
