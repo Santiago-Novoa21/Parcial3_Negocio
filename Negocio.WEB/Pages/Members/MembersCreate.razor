@@ -1,0 +1,32 @@
+﻿@page "/members/create"
+
+@inject IRepository repository
+@inject NavigationManager navigationManager
+@inject SweetAlertService sweetAlertService
+
+<h3>Crear Miembro</h3>
+
+<MembersForm Member="currentMember" OnSubmit="Create" ReturnAction="Return" />
+
+@code {
+    private Member currentMember = new();
+
+    private async Task Create()
+    {
+        var responseHttp = await repository.PostAsync("/api/members", currentMember);
+        if (responseHttp.Error)
+        {
+            var message = await responseHttp.GetErrorMessage();
+            await sweetAlertService.FireAsync("Error", message, "error");
+            return;
+        }
+
+        await sweetAlertService.FireAsync("Éxito", "Miembro creado correctamente", "success");
+        navigationManager.NavigateTo("/members");
+    }
+
+    private void Return()
+    {
+        navigationManager.NavigateTo("/members");
+    }
+}

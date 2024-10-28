@@ -1,0 +1,45 @@
+﻿<h3>MemberForm</h3>
+
+<EditForm Model="Member" OnSubmit="OnSubmit">
+    <DataAnnotationsValidator />
+
+    <div class="mb-3">
+        <label>Nombre del Miembro:</label>
+        <div>
+            <InputText class="form-control" @bind-Value="Member.Name" />
+            <ValidationMessage For="@(() => Member.Name)" />
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label>Correo Electrónico:</label>
+        <div>
+            <InputText class="form-control" @bind-Value="Member.Email" />
+            <ValidationMessage For="@(() => Member.Email)" />
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label>Número de Teléfono:</label>
+        <div>
+            <InputText class="form-control" @bind-Value="Member.PhoneNumber" />
+            <ValidationMessage For="@(() => Member.PhoneNumber)" />
+        </div>
+    </div>
+
+    <button class="btn btn-primary" type="submit">Guardar</button>
+    <button class="btn btn-success" @onclick="ReturnAction">Regresar</button>
+</EditForm>
+@code {
+    [EditorRequired]
+    [Parameter]
+    public Negocio.Shared.Entities.Member Member { get; set; } = new Negocio.Shared.Entities.Member();
+
+    [EditorRequired]
+    [Parameter]
+    public EventCallback OnSubmit { get; set; }
+
+    [EditorRequired]
+    [Parameter]
+    public EventCallback ReturnAction { get; set; }
+}
