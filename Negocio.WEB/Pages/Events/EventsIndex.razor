@@ -1,155 +1,99 @@
-﻿@page "/events" 
+﻿
+@page "/events"
 
-@using Negocio.Shared.Entities 
+@using Negocio.Shared.Entities
+@using Negocio.WEB.Repositories
+@using Negocio.WEB.Shared
 
-@using Negocio.WEB.Repositories 
+@inject IRepository repository
+@inject NavigationManager navigationManager
+@inject SweetAlertService swal
 
-@using Negocio.WEB.Shared 
+<h1>Eventos</h1>
 
- 
+<div class="mb-3">
+    <a class="btn btn-primary" href="/events/create">Nuevo Evento</a>
+</div>
 
- 
-
-@inject IRepository repository  
-
- 
-
-<h1>EventsIndex</h1> 
-
- 
-
-<div class="mb-3"> 
-
- 
-
- 
-
-    <a class="btn btn-primary " href="/events/Create">New Events</a> 
-
- 
-
-</div> 
-
- 
-
-<GenericList MyList="Events"> 
-
- 
-
-    <Body> 
-
-        <table class="table table-striped"> 
-
-            <thead> 
-
-                <tr> 
-
-                    <th>Events</th> 
-
-                    
-
- 
-
-                </tr> 
-
-            </thead> 
-
-            <tbody> 
-
-                @foreach (var events in Events!) 
-
-                { 
-
-                    <tr> 
-
-                         
-
-                        <td> 
-
-                            @events.Name
-
-                        </td> 
-
+<GenericList MyList="Events">
+    <Body>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Descripción</th>
+                    <th>Fecha</th>
+                    <th>Capacidad</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var evento in Events!)
+                {
+                    <tr>
+                        <td>@evento.Name</td>
+                        <td>@evento.Description</td>
+                        <td>@evento.Date.ToShortDateString()</td>
+                        <td>@evento.Capacity</td>
                         <td>
+                            <a class="btn btn-warning" href="/events/edit/@evento.Id">Editar</a>
+                            <button class="btn btn-danger" @onclick="@(() => Delete(evento))">Borrar</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </Body>
+</GenericList>
 
-                            @events.Description
-                        </td> 
+@code {
+    public List<Event> Events { get; set; } = new();
 
- 
+    protected async override Task OnInitializedAsync()
+    {
+        await LoadEvents();
+    }
 
-                        
+    private async Task LoadEvents()
+    {
+        var responseHttp = await repository.GetAsync<List<Event>>("/api/events");
+        if (responseHttp.Error)
+        {
+            var messageError = await responseHttp.GetErrorMessage();
+            await swal.FireAsync("Error", messageError, SweetAlertIcon.Error);
+        }
+        else
+        {
+            Events = responseHttp.Response!;
+        }
+    }
 
-                        <td>
+    private async Task Delete(Event evento)
+    {
+        var confirm = await swal.FireAsync(new SweetAlertOptions
+            {
+                Title = "Confirmación",
+                Text = "¿Estás seguro de que deseas borrar este evento?",
+                Icon = SweetAlertIcon.Question,
+                ShowCancelButton = true
+            });
 
-                            @events.Date
-                        </td> 
+        if (string.IsNullOrEmpty(confirm.Value))
+        {
+            return; 
+        }
 
- 
+        var responseHTTP = await repository.DeleteAsync<Event>($"api/events/{evento.Id}");
 
- 
-
-                        <td>
-                            @events.Capacity
-                            
-
-                        </td> 
-
-
-
-                        <td> 
-
-                            <a class="btn btn-warning">Editar</a> 
-
-                            <button class="btn btn-danger">Borrar</button> 
-
-                        </td> 
-
- 
-
-                    </tr> 
-
-                } 
-
-            </tbody> 
-
-        </table> 
-
- 
-
-    </Body> 
-
-  
-
-</GenericList> 
-
- 
-
-@code { 
-
- 
-
- 
-
-    public List<Event> Events { get; set; } 
-
- 
-
-    protected async override Task OnInitializedAsync() 
-
-    { 
-
-        var responseHttp = await repository.GetAsync<List<Event>>("/api/events"); 
-
-        Events = responseHttp.Response!; 
-
- 
-
- 
-
- 
-
- 
-
-} 
-
-} 
+        if (responseHTTP.Error)
+        {
+            var messageError = await responseHTTP.GetErrorMessage();
+            await swal.FireAsync("Error", messageError, SweetAlertIcon.Error);
+        }
+        else
+        {
+            Events.Remove(evento);
+            await LoadEvents();
+        }
+    }
+}

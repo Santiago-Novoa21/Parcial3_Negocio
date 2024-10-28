@@ -17,6 +17,14 @@ namespace Negocio.WEB.Repositories
 
         Task<HttpResponseWrapper<TResponse>> PostAsync<T, TResponse>(string url, T model);
 
+
+        Task<HttpResponseWrapper<object>> PutAsync<T>(string url, T model);
+
+
+
+        Task<HttpResponseWrapper<TResponse>> PutAsync<T, TResponse>(string url, T model);
+
+        Task<HttpResponseWrapper<object>> DeleteAsync<T>(string url);
     }
 
 }
