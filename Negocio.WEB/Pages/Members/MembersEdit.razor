@@ -1,0 +1,57 @@
+﻿@page "/members/edit/{Id:int}"
+
+@inject NavigationManager navigationManager
+@inject IRepository repository
+@inject SweetAlertService sweetAlertService
+
+<h3>Editar Miembro</h3>
+
+@if (currentMember is null)
+{
+    <p>Cargando...</p>
+}
+else
+{
+    <MembersForm Member="currentMember" OnSubmit="Edit" ReturnAction="Return" />
+}
+
+@code {
+    private Member currentMember;
+
+    [Parameter]
+    public int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var responseHttp = await repository.GetAsync<Member>($"api/members/{Id}");
+        if (responseHttp.Error)
+        {
+            var message = await responseHttp.GetErrorMessage();
+            await sweetAlertService.FireAsync("Error", message, "error");
+            navigationManager.NavigateTo("/members");
+            return;
+        }
+
+        currentMember = responseHttp.Response;
+    }
+
+    private async Task Edit()
+    {
+        var responseHttp = await repository.PutAsync("/api/members", currentMember);
+        if (responseHttp.Error)
+        {
+            var message = await responseHttp.GetErrorMessage();
+            await sweetAlertService.FireAsync("Error", message, "error");
+            return;
+        }
+
+        await sweetAlertService.FireAsync("Éxito", "Miembro actualizado correctamente", "success");
+        navigationManager.NavigateTo("/members");
+    }
+
+    private void Return()
+    {
+        navigationManager.NavigateTo("/members");
+    }
+}
+
