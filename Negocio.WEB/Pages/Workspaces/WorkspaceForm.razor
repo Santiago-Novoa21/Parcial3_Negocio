@@ -1,4 +1,6 @@
-﻿<h3>Formulario de Espacio de Trabajo</h3>
+﻿@using Negocio.Shared.Entities
+
+<h3>Formulario de Espacio de Trabajo</h3>
 
 <EditForm Model="Workspace" OnSubmit="OnSubmit">
     <DataAnnotationsValidator />
@@ -33,7 +35,7 @@
 @code {
     [EditorRequired]
     [Parameter]
-    public Negocio.Shared.Entities.Workspace Workspace { get; set; } = new();
+    public Workspace Workspace { get; set; }
 
     [EditorRequired]
     [Parameter]

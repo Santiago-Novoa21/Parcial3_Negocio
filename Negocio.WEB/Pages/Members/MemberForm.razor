@@ -1,10 +1,9 @@
-﻿<h3>MemberForm</h3>
+﻿@using Negocio.Shared.Entities
 
-<EditForm Model="Member" OnSubmit="OnSubmit">
+<EditForm Model="Member" OnValidSubmit="OnSubmit">
     <DataAnnotationsValidator />
-
     <div class="mb-3">
-        <label>Nombre del Miembro:</label>
+        <label>Nombre:</label>
         <div>
             <InputText class="form-control" @bind-Value="Member.Name" />
             <ValidationMessage For="@(() => Member.Name)" />
@@ -20,7 +19,7 @@
     </div>
 
     <div class="mb-3">
-        <label>Número de Teléfono:</label>
+        <label>Numero de Telefono:</label>
         <div>
             <InputText class="form-control" @bind-Value="Member.PhoneNumber" />
             <ValidationMessage For="@(() => Member.PhoneNumber)" />
@@ -28,12 +27,13 @@
     </div>
 
     <button class="btn btn-primary" type="submit">Guardar</button>
-    <button class="btn btn-success" @onclick="ReturnAction">Regresar</button>
+    <button class="btn btn-success" type="button" @onclick="ReturnAction">Regresar</button>
 </EditForm>
+
 @code {
     [EditorRequired]
     [Parameter]
-    public Negocio.Shared.Entities.Member Member { get; set; } = new Negocio.Shared.Entities.Member();
+    public Member Member { get; set; } = default!;
 
     [EditorRequired]
     [Parameter]

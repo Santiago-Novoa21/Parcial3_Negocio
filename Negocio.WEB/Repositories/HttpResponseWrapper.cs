@@ -37,7 +37,7 @@ namespace Negocio.WEB.Repositories
 
 
 
-        public async Task<string?> GetErrorMessage()
+        public async Task<string?> GetErrorMessageAsync()
 
         {
 

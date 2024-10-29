@@ -1,0 +1,38 @@
+﻿@page "/workspaces/create"
+
+@inject IRepository repository
+
+@inject NavigationManager navigationManager 
+
+@inject SweetAlertService sweetAlertService
+<h3>Workspace  Create</h3>
+
+<WorkspaceForm @ref="workspaceForm" Workspace="workspace" OnSubmit="Create" ReturnAction="Return" />
+
+
+
+@code {
+    private Workspace workspace = new();
+    private WorkspaceForm workspaceForm;
+
+
+
+    private async Task Create()
+    {
+
+        var responseHttp = await repository.PostAsync("/api/workspaces", workspace);
+        if (responseHttp.Error)
+        {
+            var message = await responseHttp.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message);
+            return;
+        }
+
+        navigationManager.NavigateTo("/Workspaces");
+    }
+
+    private void Return()
+    {
+        navigationManager.NavigateTo("/Workspaces");
+    }
+}

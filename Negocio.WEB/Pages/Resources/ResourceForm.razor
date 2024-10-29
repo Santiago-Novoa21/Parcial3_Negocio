@@ -1,4 +1,5 @@
-﻿
+﻿@using Negocio.Shared.Entities
+
 
 <h3>Formulario de Recurso</h3>
 
@@ -36,7 +37,7 @@
 @code {
     [EditorRequired]
     [Parameter]
-    public Negocio.Shared.Entities.Resource Resource { get; set; } = new();
+    public Resource Resource { get; set; }
 
     [EditorRequired]
     [Parameter]

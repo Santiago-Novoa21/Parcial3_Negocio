@@ -1,0 +1,49 @@
+﻿@using Negocio.Shared.Entities
+
+<EditForm Model="Member" OnSubmit="@OnSubmit">
+    <DataAnnotationsValidator />
+    <div class="mb-3">
+        <label>Nombre:</label>
+        <div>
+            <InputText @bind-Value="Member.Name" />
+            <ValidationMessage For="@(() => Member.Name)" />
+        </div>
+    </div>
+    <div class="mb-3">
+        <label>Correo Electrónico:</label>
+        <div>
+            <InputText @bind-Value="Member.Email" />
+            <ValidationMessage For="@(() => Member.Email)" />
+        </div>
+    </div>
+    <div class="mb-3">
+        <label>Numero de Telefono:</label>
+        <div>
+            <InputText @bind-Value="Member.PhoneNumber" />
+            <ValidationMessage For="@(() => Member.PhoneNumber)" />
+        </div>
+    </div>
+    <div class="mb-3">
+        <label>Membership ID:</label>
+        <div>
+            <InputText @bind-Value="Member.MembershipId" />
+            <ValidationMessage For="@(() => Member.MembershipId)" />
+        </div>
+    </div>
+    <button class="btn btn-primary" type="submit">Guardar</button>
+    <button class="btn btn-success" type="button" @onclick="ReturnAction">Regresar</button>
+</EditForm>
+
+@code {
+    [EditorRequired]
+    [Parameter]
+    public Member Member { get; set; }
+
+    [EditorRequired]
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnSubmit { get; set; }
+
+    [EditorRequired]
+    [Parameter]
+    public EventCallback<MouseEventArgs> ReturnAction { get; set; }
+}

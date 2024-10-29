@@ -1,0 +1,38 @@
+﻿@page "/memberships/create"
+
+@inject IRepository repository
+
+@inject NavigationManager navigationManager
+
+@inject SweetAlertService sweetAlertService
+<h3>Membership  Create</h3>
+
+<MembershipForm @ref="membershipForm" Member="membership" OnSubmit="Create" ReturnAction="Return" />
+
+
+
+@code {
+    private Membership membership = new();
+    private MembershipForm membershipForm;
+
+
+
+    private async Task Create()
+    {
+
+        var responseHttp = await repository.PostAsync("/api/memberships", membership);
+        if (responseHttp.Error)
+        {
+            var message = await responseHttp.GetErrorMessageAsync();
+            await sweetAlertService.FireAsync("Error", message);
+            return;
+        }
+
+        navigationManager.NavigateTo("/Membership");
+    }
+
+    private void Return()
+    {
+        navigationManager.NavigateTo("/Membership");
+    }
+}

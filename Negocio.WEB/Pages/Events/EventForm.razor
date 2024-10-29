@@ -1,4 +1,6 @@
-﻿<h3>EventForm</h3>
+﻿@using Negocio.Shared.Entities
+
+<h3>EventForm</h3>
 
 <EditForm Model="Event" OnValidSubmit="OnSubmit">
     <DataAnnotationsValidator />
@@ -42,7 +44,7 @@
 @code {
     [EditorRequired]
     [Parameter]
-    public Negocio.Shared.Entities.Event Event { get; set; } = new Negocio.Shared.Entities.Event();
+    public Event Event { get; set; }
 
     [EditorRequired]
     [Parameter]

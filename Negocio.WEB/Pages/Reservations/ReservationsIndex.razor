@@ -1,44 +1,40 @@
 ﻿@page "/reservations"
-
-
 @using CurrieTechnologies.Razor.SweetAlert2
 @using Negocio.Shared.Entities
 @using Negocio.WEB.Repositories
 @using Negocio.WEB.Shared
-
 @inject IRepository repository
-@inject NavigationManager navigationManager
-@inject SweetAlertService sweetAlertService
-
-<h1>Reservas</h1>
-
+<h1>ReservationsIndex</h1>
 <div class="mb-3">
-    <a class="btn btn-primary" href="/reservations/create">Nueva Reserva</a>
+    <a class="btn btn-primary " href="/reservations/Create">New Reservation</a>
 </div>
-
 <GenericList MyList="Reservations">
     <Body>
         <table class="table table-striped">
             <thead>
                 <tr>
-                    <th>Fecha de Inicio</th>
-                    <th>Fecha de Fin</th>
-                    <th>Miembro</th>
-                    <th>Espacio de Trabajo</th>
-                    <th>Acciones</th>
+                    <th>Reservations</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var reservation in Reservations!)
                 {
                     <tr>
-                        <td>@reservation.StartDate.ToString("yyyy-MM-dd")</td>
-                        <td>@reservation.EndDate.ToString("yyyy-MM-dd")</td>
-                        <td>@reservation.Member.Name</td>
-                        <td>@reservation.Workspace.Name</td>
                         <td>
-                            <a class="btn btn-warning" href="/reservations/edit/@reservation.Id">Editar</a>
-                            <button class="btn btn-danger" @onclick="@(() => Delete(reservation))">Borrar</button>
+                            @reservation.StartDate
+                        </td>
+                        <td>
+                            @reservation.EndDate
+                        </td>
+                        <td>
+                            @reservation.MemberId
+                        </td>
+                        <td>
+                            @reservation.WorkspaceId
+                        </td>
+                        <td>
+                            <a class="btn btn-warning">Editar</a>
+                            <button class="btn btn-danger">Borrar</button>
                         </td>
                     </tr>
                 }
@@ -46,46 +42,11 @@
         </table>
     </Body>
 </GenericList>
-
 @code {
-    public List<Reservation> Reservations { get; set; } = new List<Reservation>();
-
+    public List<Reservation> Reservations { get; set; }
     protected async override Task OnInitializedAsync()
-    {
-        await Load();
-    }
-
-    private async Task Load()
     {
         var responseHttp = await repository.GetAsync<List<Reservation>>("/api/reservations");
         Reservations = responseHttp.Response!;
     }
-
-    private async Task Delete(Reservation reservation)
-    {
-        var result = await sweetAlertService.FireAsync(new SweetAlertOptions
-            {
-                Title = "Confirmación",
-                Text = "¿Estás seguro de que quieres borrar la reserva?",
-                Icon = SweetAlertIcon.Question,
-                ShowCancelButton = true
-            });
-
-        if (string.IsNullOrEmpty(result.Value))
-        {
-            return;
-        }
-
-        var responseHttp = await repository.DeleteAsync<Reservation>($"api/reservations/{reservation.Id}");
-
-        if (responseHttp.Error)
-        {
-            var mensajeError = await responseHttp.GetErrorMessage();
-            await sweetAlertService.FireAsync("Error", mensajeError, SweetAlertIcon.Error);
-        }
-        else
-        {
-            await Load();
-        }
-    }
-}
+} 
