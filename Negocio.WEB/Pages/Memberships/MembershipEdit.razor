@@ -1,0 +1,70 @@
+﻿@page "/reservations/edit/{Id:int}"
+
+@inject NavigationManager navigationManager
+@inject IRepository repository
+@inject SweetAlertService swal
+
+
+<h3>MembershipEdit</h3>
+
+
+@if (MembershipModel is null)
+{
+    <p>Cargando...</p>
+}
+else
+{
+    <MembershipForm @ref="EventForm" Membership="MembershipModel" OnSubmit="Edit" ReturnAction="Return" />
+}
+
+
+@code {
+    private Membership MembershipModel;
+    private MembershipForm EventForm;
+
+    [Parameter]
+    public int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var responseHTTP = await repository.GetAsync<Membership>($"api/events/{Id}");
+
+        if (responseHTTP.Error)
+        {
+            if (responseHTTP.HttpResponseMessage.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                navigationManager.NavigateTo("events");
+            }
+            else
+            {
+                var messageError = await responseHTTP.GetErrorMessageAsync();
+                await swal.FireAsync("Error", messageError, SweetAlertIcon.Error);
+            }
+        }
+        else
+        {
+            MembershipModel = responseHTTP.Response;
+        }
+    }
+
+    private async Task Edit()
+    {
+        var responseHTTP = await repository.PutAsync("api/memberships", MembershipModel);
+
+        if (responseHTTP.Error)
+        {
+            var mensajeError = await responseHTTP.GetErrorMessageAsync();
+            await swal.FireAsync("Error", mensajeError, SweetAlertIcon.Error);
+        }
+        else
+        {
+            EventForm!.FormPostedSuccessfully = true;
+            navigationManager.NavigateTo("membershipModel");
+        }
+    }
+
+    private void Return()
+    {
+        navigationManager.NavigateTo("membershipModel");
+    }
+}

@@ -3,11 +3,16 @@
 @using Negocio.Shared.Entities
 @using Negocio.WEB.Repositories
 @using Negocio.WEB.Shared
+@inject NavigationManager navigationManager
+@inject SweetAlertService swal
 @inject IRepository repository
+
 <h1>ResourcesIndex</h1>
+
 <div class="mb-3">
-    <a class="btn btn-primary " href="/resources/create">New Resource</a>
+    <a class="btn btn-primary" href="/resources/create">New Resource</a>
 </div>
+
 <GenericList MyList="Resources">
     <Body>
         <table class="table table-striped">
@@ -20,18 +25,12 @@
                 @foreach (var resource in Resources!)
                 {
                     <tr>
+                        <td>@resource.Name</td>
+                        <td>@resource.Description</td>
+                        <td>@resource.Available</td>
                         <td>
-                            @resource.Name
-                        </td>
-                        <td>
-                            @resource.Description
-                        </td>
-                        <td>
-                            @resource.Available
-                        </td>
-                        <td>
-                            <a class="btn btn-warning">Editar</a>
-                            <button class="btn btn-danger">Borrar</button>
+                            <a href="/resources/edit/@resource.Id" class="btn btn-warning">Editar</a>
+                            <button class="btn btn-danger" @onclick="@(() => DeleteAsync(resource))">Borrar</button>
                         </td>
                     </tr>
                 }
@@ -39,11 +38,54 @@
         </table>
     </Body>
 </GenericList>
+
 @code {
     public List<Resource> Resources { get; set; }
+
     protected async override Task OnInitializedAsync()
+    {
+        await Load();
+    }
+
+    private async Task Load()
     {
         var responseHttp = await repository.GetAsync<List<Resource>>("/api/resources");
         Resources = responseHttp.Response!;
     }
-} 
+
+    private async Task DeleteAsync(Resource resource)
+    {
+        var result = await swal.FireAsync(new SweetAlertOptions
+            {
+                Title = "Confirmación",
+                Text = "¿Estás seguro de que quieres borrar el registro?",
+                Icon = SweetAlertIcon.Question,
+                ShowCancelButton = true,
+                ConfirmButtonText = "Sí, eliminar",
+                CancelButtonText = "No"
+            });
+
+        if (string.IsNullOrEmpty(result.Value))
+        {
+            return;
+        }
+
+        var responseHTTP = await repository.DeleteAsync<Resource>($"api/resources/{resource.Id}");
+        if (responseHTTP.Error)
+        {
+            if (responseHTTP.HttpResponseMessage.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                navigationManager.NavigateTo("/");
+            }
+            else
+            {
+                var mensajeError = await responseHTTP.GetErrorMessageAsync();
+                await swal.FireAsync("Error", mensajeError, SweetAlertIcon.Error);
+            }
+        }
+        else
+        {
+            Resources.Remove(resource);
+        }
+    }
+}

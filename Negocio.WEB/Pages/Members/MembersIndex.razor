@@ -1,13 +1,17 @@
 ﻿@page "/members"
-@using CurrieTechnologies.Razor.SweetAlert2
 @using Negocio.Shared.Entities
 @using Negocio.WEB.Repositories
 @using Negocio.WEB.Shared
+@inject NavigationManager navigationManager
+@inject SweetAlertService swal
 @inject IRepository repository
+
 <h1>MembersIndex</h1>
+
 <div class="mb-3">
-    <a class="btn btn-primary " href="/members/create">New Member</a>
+    <a class="btn btn-primary" href="/members/create">New Member</a>
 </div>
+
 <GenericList MyList="Members">
     <Body>
         <table class="table table-striped">
@@ -17,24 +21,16 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (var member in Members!)
+                @foreach (var members in Members!)
                 {
                     <tr>
+                        <td>@members.Name</td>
+                        <td>@members.Email</td>
+                        <td>@members.PhoneNumber</td>
+                        <td>@members.MembershipId</td>
                         <td>
-                            @member.Name
-                        </td>
-                        <td>
-                            @member.Email
-                        </td>
-                        <td>
-                            @member.PhoneNumber
-                        </td>
-                        <td>
-                            @member.MembershipId
-                        </td>
-                        <td>
-                            <a class="btn btn-warning">Editar</a>
-                            <button class="btn btn-danger">Borrar</button>
+                            <a href="/members/edit/@members.Id" class="btn btn-warning">Editar</a>
+                            <button class="btn btn-danger" @onclick="@(() => DeleteAsync(members))">Borrar</button>
                         </td>
                     </tr>
                 }
@@ -42,11 +38,53 @@
         </table>
     </Body>
 </GenericList>
+
 @code {
     public List<Member> Members { get; set; }
+
     protected async override Task OnInitializedAsync()
+    {
+        await Load();
+    }
+
+    private async Task Load()
     {
         var responseHttp = await repository.GetAsync<List<Member>>("/api/members");
         Members = responseHttp.Response!;
     }
-} 
+
+    private async Task DeleteAsync(Member members)
+    {
+        var result = await swal.FireAsync(new SweetAlertOptions
+            {
+                Title = "Confirmación",
+                Text = "¿Estás seguro de que quieres borrar el registro?",
+                Icon = SweetAlertIcon.Question,
+                ShowCancelButton = true
+            });
+
+        var confirm = string.IsNullOrEmpty(result.Value);
+        if (confirm)
+        {
+            return;
+        }
+
+        var responseHTTP = await repository.DeleteAsync<Member>($"api/members/{members.Id}");
+        if (responseHTTP.Error)
+        {
+            if (responseHTTP.HttpResponseMessage.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                navigationManager.NavigateTo("/");
+            }
+            else
+            {
+                var mensajeError = await responseHTTP.GetErrorMessageAsync();
+                await swal.FireAsync("Error", mensajeError, SweetAlertIcon.Error);
+            }
+        }
+        else
+        {
+            await Load();
+        }
+    }
+}

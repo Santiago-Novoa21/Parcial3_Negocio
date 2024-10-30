@@ -2,78 +2,89 @@
 @using Negocio.Shared.Entities
 @using Negocio.WEB.Repositories
 @using Negocio.WEB.Shared
-
-
+@inject NavigationManager navigationManager
+@inject SweetAlertService swal
 @inject IRepository repository
 
 <h1>EventsIndex</h1>
 
 <div class="mb-3">
-
-
-    <a class="btn btn-primary " href="/events/Create">New Events</a>
-
+    <a class="btn btn-primary" href="/events/Create">New Events</a>
 </div>
 
 <GenericList MyList="Events">
-
     <Body>
         <table class="table table-striped">
             <thead>
                 <tr>
                     <th>Events</th>
-
-
                 </tr>
             </thead>
             <tbody>
                 @foreach (var events in Events!)
                 {
                     <tr>
-
+                        <td>@events.Name</td>
+                        <td>@events.Description</td>
+                        <td>@events.Date</td>
+                        <td>@events.Capacity</td>
                         <td>
-                            @events.Name
+                            <a href="/events/edit/@events.Id" class="btn btn-warning">Editar</a>
+                            <button class="btn btn-danger" @onclick="@(() => DeleteAsync(events))">Borrar</button>
                         </td>
-                        <td>
-                            @events.Description
-                        </td>
-
-
-                        <td>
-                            @events.Date
-                        </td>
-
-
-                        <td>
-                            @events.Capacity
-
-                        </td>
-                        <td>
-                            <a class="btn btn-warning">Editar</a>
-                            <button class="btn btn-danger">Borrar</button>
-                        </td>
-
                     </tr>
                 }
             </tbody>
         </table>
-
     </Body>
-
 </GenericList>
 
 @code {
-
-
     public List<Event> Events { get; set; }
 
     protected async override Task OnInitializedAsync()
     {
+        await Load();
+    }
+
+    private async Task Load()
+    {
         var responseHttp = await repository.GetAsync<List<Event>>("/api/events");
         Events = responseHttp.Response!;
-
-
-
-
     }
-} 
+
+    private async Task DeleteAsync(Event events)
+    {
+        var result = await swal.FireAsync(new SweetAlertOptions
+            {
+                Title = "Confirmación",
+                Text = "¿Estás seguro de que quieres borrar el registro?",
+                Icon = SweetAlertIcon.Question,
+                ShowCancelButton = true
+            });
+
+        var confirm = string.IsNullOrEmpty(result.Value);
+        if (confirm)
+        {
+            return;
+        }
+
+        var responseHTTP = await repository.DeleteAsync<Event>($"api/events/{events.Id}");
+        if (responseHTTP.Error)
+        {
+            if (responseHTTP.HttpResponseMessage.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                navigationManager.NavigateTo("/");
+            }
+            else
+            {
+                var mensajeError = await responseHTTP.GetErrorMessageAsync();
+                await swal.FireAsync("Error", mensajeError, SweetAlertIcon.Error);
+            }
+        }
+        else
+        {
+            await Load();
+        }
+    }
+}

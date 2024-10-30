@@ -1,10 +1,12 @@
 ﻿@using Negocio.Shared.Entities
+@inject SweetAlertService swal
 
 <h3>Formulario de Reserva</h3>
 
-<EditForm Model="Reservation" OnSubmit="OnSubmit">
-    <DataAnnotationsValidator />
+<NavigationLock OnBeforeInternalNavigation="OnBeforeInternalNavigation"></NavigationLock>
 
+<EditForm EditContext="editContext" OnSubmit="@OnSubmit">
+    <DataAnnotationsValidator />
     <div class="mb-3">
         <label>Fecha de Inicio:</label>
         <div>
@@ -12,7 +14,6 @@
             <ValidationMessage For="@(() => Reservation.StartDate)" />
         </div>
     </div>
-
     <div class="mb-3">
         <label>Fecha de Fin:</label>
         <div>
@@ -20,7 +21,6 @@
             <ValidationMessage For="@(() => Reservation.EndDate)" />
         </div>
     </div>
-
     <div class="mb-3">
         <label>ID Miembro:</label>
         <div>
@@ -28,7 +28,6 @@
             <ValidationMessage For="@(() => Reservation.MemberId)" />
         </div>
     </div>
-
     <div class="mb-3">
         <label>ID Espacio de Trabajo:</label>
         <div>
@@ -36,15 +35,21 @@
             <ValidationMessage For="@(() => Reservation.WorkspaceId)" />
         </div>
     </div>
-
     <button class="btn btn-primary" type="submit">Guardar</button>
-    <button class="btn btn-success" @onclick="ReturnAction">Regresar</button>
+    <button class="btn btn-success" type="button" @onclick="() => ReturnAction.InvokeAsync()">Regresar</button>
 </EditForm>
 
 @code {
+    private EditContext editContext = null!;
+
+    protected override void OnInitialized()
+    {
+        editContext = new EditContext(Reservation);
+    }
+
     [EditorRequired]
     [Parameter]
-    public Reservation Reservation { get; set; }
+    public Reservation Reservation { get; set; } = null!;
 
     [EditorRequired]
     [Parameter]
@@ -53,5 +58,32 @@
     [EditorRequired]
     [Parameter]
     public EventCallback ReturnAction { get; set; }
-}
 
+    public bool FormPostedSuccessfully { get; set; } = false;
+
+    private async Task OnBeforeInternalNavigation(LocationChangingContext context)
+    {
+        var formWasEdited = editContext.IsModified();
+        if (!formWasEdited)
+        {
+            return;
+        }
+        if (FormPostedSuccessfully)
+        {
+            return;
+        }
+        var result = await swal.FireAsync(new SweetAlertOptions
+            {
+                Title = "Confirmación",
+                Text = "¿Deseas abandonar la página y perder los cambios?",
+                Icon = SweetAlertIcon.Warning,
+                ShowCancelButton = true
+            });
+        var confirm = !string.IsNullOrEmpty(result.Value);
+        if (confirm)
+        {
+            return;
+        }
+        context.PreventNavigation();
+    }
+}

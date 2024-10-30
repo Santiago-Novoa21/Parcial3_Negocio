@@ -1,6 +1,9 @@
 ﻿@using Negocio.Shared.Entities
+@inject SweetAlertService swal
 
-<EditForm Model="Member" OnSubmit="OnSubmit">
+<NavigationLock OnBeforeInternalNavigation="OnBeforeInternalNavigation"></NavigationLock>
+
+<EditForm EditContext="editContext" OnSubmit="@OnSubmit">
     <DataAnnotationsValidator />
     <div class="mb-3">
         <label>Nombre:</label>
@@ -26,24 +29,59 @@
     <div class="mb-3">
         <label>Membership ID:</label>
         <div>
-            <InputText @bind-Value="Member.MembershipId" />
+            <InputNumber @bind-Value="Member.MembershipId" />
             <ValidationMessage For="@(() => Member.MembershipId)" />
         </div>
     </div>
     <button class="btn btn-primary" type="submit">Guardar</button>
-    <button class="btn btn-success" type="button" @onclick="ReturnAction">Regresar</button>
+    <button class="btn btn-success" type="button" @onclick="() => ReturnAction.InvokeAsync()">Regresar</button>
 </EditForm>
 
 @code {
-    [EditorRequired]
-    [Parameter]
-    public Member Member { get; set; }
+    private EditContext editContext = null!;
+
+    protected override void OnInitialized()
+    {
+        editContext = new (Member);
+    }
 
     [EditorRequired]
     [Parameter]
-    public EventCallback<MouseEventArgs> OnSubmit { get; set; }
+    public Member Member { get; set; } = null!;
 
     [EditorRequired]
     [Parameter]
-    public EventCallback<MouseEventArgs> ReturnAction { get; set; }
+    public EventCallback OnSubmit { get; set; }
+
+    [EditorRequired]
+    [Parameter]
+    public EventCallback ReturnAction { get; set; }
+
+    public bool FormPostedSuccessfully { get; set; } = false;
+
+    private async Task OnBeforeInternalNavigation(LocationChangingContext context)
+    {
+        var formWasEdited = editContext.IsModified();
+        if (!formWasEdited)
+        {
+            return;
+        }
+        if (FormPostedSuccessfully)
+        {
+            return;
+        }
+        var result = await swal.FireAsync(new SweetAlertOptions
+            {
+                Title = "Confirmación",
+                Text = "¿Deseas abandonar la página y perder los cambios?",
+                Icon = SweetAlertIcon.Warning,
+                ShowCancelButton = true
+            });
+        var confirm = !string.IsNullOrEmpty(result.Value);
+        if (confirm)
+        {
+            return;
+        }
+        context.PreventNavigation();
+    }
 }

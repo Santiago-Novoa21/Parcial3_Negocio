@@ -1,0 +1,64 @@
+﻿@page "/workspaces/edit/{Id:int}"
+@inject NavigationManager navigationManager
+@inject IRepository repository
+@inject SweetAlertService swal
+
+<h3>WorkspaceEdit</h3>
+
+@if (WorkspaceModel is null)
+{
+    <p>Cargando...</p>
+}
+else
+{
+    <WorkspaceForm @ref="WorkspaceForm" Workspace="WorkspaceModel" OnSubmit="Edit" ReturnAction="Return" />
+}
+
+@code {
+    private Workspace WorkspaceModel;
+    private WorkspaceForm WorkspaceForm;
+
+    [Parameter]
+    public int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var responseHTTP = await repository.GetAsync<Workspace>($"api/workspaces/{Id}");
+        if (responseHTTP.Error)
+        {
+            if (responseHTTP.HttpResponseMessage.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                navigationManager.NavigateTo("workspaces");
+            }
+            else
+            {
+                var messageError = await responseHTTP.GetErrorMessageAsync();
+                await swal.FireAsync("Error", messageError, SweetAlertIcon.Error);
+            }
+        }
+        else
+        {
+            WorkspaceModel = responseHTTP.Response;
+        }
+    }
+
+    private async Task Edit()
+    {
+        var responseHTTP = await repository.PutAsync("api/workspaces", WorkspaceModel);
+        if (responseHTTP.Error)
+        {
+            var mensajeError = await responseHTTP.GetErrorMessageAsync();
+            await swal.FireAsync("Error", mensajeError, SweetAlertIcon.Error);
+        }
+        else
+        {
+            WorkspaceForm!.FormPostedSuccessfully = true;
+            navigationManager.NavigateTo("workspaces");
+        }
+    }
+
+    private void Return()
+    {
+        navigationManager.NavigateTo("workspaces");
+    }
+}

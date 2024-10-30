@@ -1,0 +1,64 @@
+﻿@page "/resources/edit/{Id:int}"
+@inject NavigationManager navigationManager
+@inject IRepository repository
+@inject SweetAlertService swal
+
+<h3>ResourceEdit</h3>
+
+@if (ResourceModel is null)
+{
+    <p>Cargando...</p>
+}
+else
+{
+    <ResourceForm @ref="ResourceForm" Resource="ResourceModel" OnSubmit="Edit" ReturnAction="Return" />
+}
+
+@code {
+    private Resource ResourceModel;
+    private ResourceForm ResourceForm;
+
+    [Parameter]
+    public int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var responseHTTP = await repository.GetAsync<Resource>($"api/resources/{Id}");
+        if (responseHTTP.Error)
+        {
+            if (responseHTTP.HttpResponseMessage.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                navigationManager.NavigateTo("resources");
+            }
+            else
+            {
+                var messageError = await responseHTTP.GetErrorMessageAsync();
+                await swal.FireAsync("Error", messageError, SweetAlertIcon.Error);
+            }
+        }
+        else
+        {
+            ResourceModel = responseHTTP.Response;
+        }
+    }
+
+    private async Task Edit()
+    {
+        var responseHTTP = await repository.PutAsync("api/resources", ResourceModel);
+        if (responseHTTP.Error)
+        {
+            var mensajeError = await responseHTTP.GetErrorMessageAsync();
+            await swal.FireAsync("Error", mensajeError, SweetAlertIcon.Error);
+        }
+        else
+        {
+            ResourceForm!.FormPostedSuccessfully = true;
+            navigationManager.NavigateTo("resources");
+        }
+    }
+
+    private void Return()
+    {
+        navigationManager.NavigateTo("resources");
+    }
+}

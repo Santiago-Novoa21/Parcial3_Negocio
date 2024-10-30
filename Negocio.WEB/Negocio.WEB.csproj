@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Negocio.API\Negocio.API.csproj" />
     <ProjectReference Include="..\Negocio.Shared\Negocio.Shared.csproj" />
   </ItemGroup>
 
