@@ -3,11 +3,16 @@
 @using Negocio.Shared.Entities
 @using Negocio.WEB.Repositories
 @using Negocio.WEB.Shared
+@inject NavigationManager navigationManager
+@inject SweetAlertService swal
 @inject IRepository repository
+
 <h1>WorkspacesIndex</h1>
+
 <div class="mb-3">
-    <a class="btn btn-primary " href="/workspaces/create">New Workspace</a>
+    <a class="btn btn-primary" href="/workspaces/create">New Workspace</a>
 </div>
+
 <GenericList MyList="Workspaces">
     <Body>
         <table class="table table-striped">
@@ -20,18 +25,12 @@
                 @foreach (var workspace in Workspaces!)
                 {
                     <tr>
+                        <td>@workspace.Name</td>
+                        <td>@workspace.Description</td>
+                        <td>@workspace.Capacity</td>
                         <td>
-                            @workspace.Name
-                        </td>
-                        <td>
-                            @workspace.Description
-                        </td>
-                        <td>
-                            @workspace.Capacity
-                        </td>
-                        <td>
-                            <a class="btn btn-warning">Editar</a>
-                            <button class="btn btn-danger">Borrar</button>
+                            <a href="/workspaces/edit/@workspace.Id" class="btn btn-warning">Editar</a>
+                            <button class="btn btn-danger" @onclick="@(() => DeleteAsync(workspace))">Borrar</button>
                         </td>
                     </tr>
                 }
@@ -39,11 +38,54 @@
         </table>
     </Body>
 </GenericList>
+
 @code {
     public List<Workspace> Workspaces { get; set; }
+
     protected async override Task OnInitializedAsync()
+    {
+        await Load();
+    }
+
+    private async Task Load()
     {
         var responseHttp = await repository.GetAsync<List<Workspace>>("/api/workspaces");
         Workspaces = responseHttp.Response!;
     }
-} 
+
+    private async Task DeleteAsync(Workspace workspace)
+    {
+        var result = await swal.FireAsync(new SweetAlertOptions
+            {
+                Title = "Confirmación",
+                Text = "¿Estás seguro de que quieres borrar el registro?",
+                Icon = SweetAlertIcon.Question,
+                ShowCancelButton = true,
+                ConfirmButtonText = "Sí, eliminar",
+                CancelButtonText = "No"
+            });
+
+        if (string.IsNullOrEmpty(result.Value))
+        {
+            return;
+        }
+
+        var responseHTTP = await repository.DeleteAsync<Workspace>($"api/workspaces/{workspace.Id}");
+        if (responseHTTP.Error)
+        {
+            if (responseHTTP.HttpResponseMessage.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                navigationManager.NavigateTo("/");
+            }
+            else
+            {
+                var mensajeError = await responseHTTP.GetErrorMessageAsync();
+                await swal.FireAsync("Error", mensajeError, SweetAlertIcon.Error);
+            }
+        }
+        else
+        {
+            Workspaces.Remove(workspace);
+        }
+    }
+}

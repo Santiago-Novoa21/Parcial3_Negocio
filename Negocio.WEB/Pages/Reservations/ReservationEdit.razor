@@ -1,0 +1,64 @@
+﻿@page "/reservations/edit/{Id:int}"
+@inject NavigationManager navigationManager
+@inject IRepository repository
+@inject SweetAlertService swal
+
+<h3>ReservationEdit</h3>
+
+@if (ReservationModel is null)
+{
+    <p>Cargando...</p>
+}
+else
+{
+    <ReservationForm @ref="ReservationForm" Reservation="ReservationModel" OnSubmit="Edit" ReturnAction="Return" />
+}
+
+@code {
+    private Reservation ReservationModel;
+    private ReservationForm ReservationForm;
+
+    [Parameter]
+    public int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var responseHTTP = await repository.GetAsync<Reservation>($"api/reservations/{Id}");
+        if (responseHTTP.Error)
+        {
+            if (responseHTTP.HttpResponseMessage.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                navigationManager.NavigateTo("reservations");
+            }
+            else
+            {
+                var messageError = await responseHTTP.GetErrorMessageAsync();
+                await swal.FireAsync("Error", messageError, SweetAlertIcon.Error);
+            }
+        }
+        else
+        {
+            ReservationModel = responseHTTP.Response;
+        }
+    }
+
+    private async Task Edit()
+    {
+        var responseHTTP = await repository.PutAsync("api/reservations", ReservationModel);
+        if (responseHTTP.Error)
+        {
+            var mensajeError = await responseHTTP.GetErrorMessageAsync();
+            await swal.FireAsync("Error", mensajeError, SweetAlertIcon.Error);
+        }
+        else
+        {
+            ReservationForm!.FormPostedSuccessfully = true;
+            navigationManager.NavigateTo("reservations");
+        }
+    }
+
+    private void Return()
+    {
+        navigationManager.NavigateTo("reservations");
+    }
+}

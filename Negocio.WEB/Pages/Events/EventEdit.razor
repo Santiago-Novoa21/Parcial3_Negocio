@@ -1,0 +1,70 @@
+﻿@page "/events/edit/{Id:int}"
+
+@inject NavigationManager navigationManager
+@inject IRepository repository
+@inject SweetAlertService swal
+
+
+<h3>EventEdit</h3>
+
+
+@if (EventModel is null)
+{
+    <p>Cargando...</p>
+}
+else
+{
+    <EventForm @ref="EventForm" Event="EventModel" OnSubmit="Edit" ReturnAction="Return" />
+}
+
+
+@code {
+    private Event EventModel;
+    private EventForm EventForm;
+
+    [Parameter]
+    public int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var responseHTTP = await repository.GetAsync<Event>($"api/events/{Id}");
+
+        if (responseHTTP.Error)
+        {
+            if (responseHTTP.HttpResponseMessage.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                navigationManager.NavigateTo("events");
+            }
+            else
+            {
+                var messageError = await responseHTTP.GetErrorMessageAsync();
+                await swal.FireAsync("Error", messageError, SweetAlertIcon.Error);
+            }
+        }
+        else
+        {
+            EventModel = responseHTTP.Response;
+        }
+    }
+
+    private async Task Edit()
+    {
+        var responseHTTP = await repository.PutAsync("api/events", EventModel);
+
+        if (responseHTTP.Error)
+        {
+            var mensajeError = await responseHTTP.GetErrorMessageAsync();
+            await swal.FireAsync("Error", mensajeError, SweetAlertIcon.Error);
+        }
+        else
+        {
+            EventForm!.FormPostedSuccessfully = true;
+            navigationManager.NavigateTo("eventsModel");
+        }
+    }
+
+    private void Return()
+    {
+        navigationManager.NavigateTo("eventsModel");
+    }
+}

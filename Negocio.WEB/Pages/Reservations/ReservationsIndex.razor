@@ -1,13 +1,17 @@
 ﻿@page "/reservations"
-@using CurrieTechnologies.Razor.SweetAlert2
 @using Negocio.Shared.Entities
 @using Negocio.WEB.Repositories
 @using Negocio.WEB.Shared
+@inject NavigationManager navigationManager
+@inject SweetAlertService swal
 @inject IRepository repository
+
 <h1>ReservationsIndex</h1>
+
 <div class="mb-3">
-    <a class="btn btn-primary " href="/reservations/Create">New Reservation</a>
+    <a class="btn btn-primary" href="/reservations/create">New Reservation</a>
 </div>
+
 <GenericList MyList="Reservations">
     <Body>
         <table class="table table-striped">
@@ -20,21 +24,13 @@
                 @foreach (var reservation in Reservations!)
                 {
                     <tr>
+                        <td>@reservation.StartDate</td>
+                        <td>@reservation.EndDate</td>
+                        <td>@reservation.MemberId</td>
+                        <td>@reservation.WorkspaceId</td>
                         <td>
-                            @reservation.StartDate
-                        </td>
-                        <td>
-                            @reservation.EndDate
-                        </td>
-                        <td>
-                            @reservation.MemberId
-                        </td>
-                        <td>
-                            @reservation.WorkspaceId
-                        </td>
-                        <td>
-                            <a class="btn btn-warning">Editar</a>
-                            <button class="btn btn-danger">Borrar</button>
+                            <a href="/reservations/edit/@reservation.Id" class="btn btn-warning">Editar</a>
+                            <button class="btn btn-danger" @onclick="@(() => DeleteAsync(reservation))">Borrar</button>
                         </td>
                     </tr>
                 }
@@ -42,11 +38,53 @@
         </table>
     </Body>
 </GenericList>
+
 @code {
     public List<Reservation> Reservations { get; set; }
+
     protected async override Task OnInitializedAsync()
+    {
+        await Load();
+    }
+
+    private async Task Load()
     {
         var responseHttp = await repository.GetAsync<List<Reservation>>("/api/reservations");
         Reservations = responseHttp.Response!;
     }
-} 
+
+    private async Task DeleteAsync(Reservation reservation)
+    {
+        var result = await swal.FireAsync(new SweetAlertOptions
+            {
+                Title = "Confirmación",
+                Text = "¿Estás seguro de que quieres borrar el registro?",
+                Icon = SweetAlertIcon.Question,
+                ShowCancelButton = true,
+                ConfirmButtonText = "Sí, eliminar",
+                CancelButtonText = "No"
+            });
+
+        if (result.IsConfirmed)
+        {
+            var responseHTTP = await repository.DeleteAsync<Reservation>($"api/reservations/{reservation.Id}");
+            if (responseHTTP.Error)
+            {
+                if (responseHTTP.HttpResponseMessage.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    navigationManager.NavigateTo("/");
+                }
+                else
+                {
+                    var mensajeError = await responseHTTP.GetErrorMessageAsync();
+                    await swal.FireAsync("Error", mensajeError, SweetAlertIcon.Error);
+                }
+            }
+            else
+            {
+                Reservations.Remove(reservation);
+                StateHasChanged(); // Renderiza de nuevo la interfaz
+            }
+        }
+    }
+}
