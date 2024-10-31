@@ -1,25 +1,14 @@
 ﻿@page "/events/create"
-
 @inject IRepository repository
-
-@inject NavigationManager navigationManager 
-
+@inject NavigationManager navigationManager
 @inject SweetAlertService sweetAlertService
 <h3>Event  Create</h3>
-
 <EventForm @ref="eventForm" Event="eventModel " OnSubmit="Create" ReturnAction="Return" />
-
-
-
 @code {
-    private Event eventModel= new();
+    private Event eventModel = new();
     private EventForm eventForm;
-
-
-
     private async Task Create()
     {
-
         var responseHttp = await repository.PostAsync("/api/events", eventModel);
         if (responseHttp.Error)
         {
@@ -27,10 +16,8 @@
             await sweetAlertService.FireAsync("Error", message);
             return;
         }
-
         navigationManager.NavigateTo("/Events");
     }
-
     private void Return()
     {
         navigationManager.NavigateTo("/Events");
